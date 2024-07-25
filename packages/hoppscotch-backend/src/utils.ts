@@ -289,7 +289,7 @@ export function escapeSqlLikeString(str: string) {
 }
 
 // Encrypt and Decrypt functions. InfraConfig and Account table uses these functions to encrypt and decrypt the data.
-const algorithm = 'aes-256-cbc';
+const ENCRYPTION_ALGORITHM = 'aes-256-cbc';
 
 /**
  * Encrypts a text using a key
@@ -301,7 +301,11 @@ export function encrypt(text: string, key = process.env.DATA_ENCRYPTION_KEY) {
   if (text === null || text === undefined) return text;
 
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
+  const cipher = crypto.createCipheriv(
+    ENCRYPTION_ALGORITHM,
+    Buffer.from(key),
+    iv,
+  );
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return iv.toString('hex') + ':' + encrypted.toString('hex');
@@ -324,7 +328,11 @@ export function decrypt(
   const textParts = encryptedData.split(':');
   const iv = Buffer.from(textParts.shift(), 'hex');
   const encryptedText = Buffer.from(textParts.join(':'), 'hex');
-  const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
+  const decipher = crypto.createDecipheriv(
+    ENCRYPTION_ALGORITHM,
+    Buffer.from(key),
+    iv,
+  );
   let decrypted = decipher.update(encryptedText);
   decrypted = Buffer.concat([decrypted, decipher.final()]);
   return decrypted.toString();
